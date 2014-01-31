@@ -9,14 +9,9 @@ a, a:hover {
   color: #136cc6;
 }
 
-/* Fix kerning issue w/ Source Sans at this font size */
-a {
-  /*padding-right: 2px;*/
-}
-
 h1, h2, h3, h4, h5, h6, p, pre {
-  margin-top: 0;
   margin-bottom: 1em;
+  margin-top: 0;
 }
 
 h1, h2, h3, h4, h5, h6, body {
@@ -28,11 +23,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 pre, tt, code {
-  font-family: "Droid Sans Mono", monospace;
-  font-size: 13px;
   background: #FFFBF4;
   border-radius: 3px;
   border: 1px solid rgba(0,0,0,0.1);
+  font-family: "Droid Sans Mono", monospace;
+  font-size: 13px;
 }
 
 pre code {
@@ -40,8 +35,8 @@ pre code {
 }
 
 tt, code {
-  padding: 0 4px;
   color: black;
+  padding: 0 4px;
 }
 
 ul, ol {
