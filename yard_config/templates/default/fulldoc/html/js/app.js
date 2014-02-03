@@ -249,6 +249,20 @@ function generateTOC() {
   });
 }
 
+function removeDlBoxIfEmpty() {
+  var $box = $('dl.box')
+  if (!$box.text().trim()) {
+    $box.remove();
+  }
+}
+
+function makeHeadersSticky() {
+  StickyHeaders
+    .set({scrollContainer: '#main'})
+    .add('h2, h3, h4, h5, h6')
+    .activate()
+}
+
 $(framesInit);
 $(createSourceLinks);
 $(createDefineLinks);
@@ -259,3 +273,5 @@ $(keyboardShortcuts);
 $(summaryToggle);
 $(fixOutsideWorldLinks);
 $(generateTOC);
+$(removeDlBoxIfEmpty);
+$(makeHeadersSticky);

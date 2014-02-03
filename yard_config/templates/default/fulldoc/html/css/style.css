@@ -5,6 +5,10 @@ h1 {
   padding-top: 1em;
 }
 
+h1 + h2 {
+  padding-top: 0;
+}
+
 h2 {
   font-size: 1.8em;
   padding-top: 1.5em;
@@ -242,3 +246,24 @@ h2 + h3, h2 + .method_details h3 {
     font-size: 1.3em;
     font-style: italic;
   }
+
+#sticky-header {
+  position: fixed;
+  z-index: 999;
+  top: 6rem;   /* same as above */
+  left: 0;
+  height: 3em;
+  width: 100%;
+}
+
+#sticky-header h2,
+#sticky-header h3,
+#sticky-header h4,
+#sticky-header h5,
+#sticky-header h6 {
+  margin: 0;
+  padding: 0;
+  padding-left: 2em;
+  padding-right: 2em;
+  background: white;
+}

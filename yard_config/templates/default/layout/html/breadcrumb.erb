@@ -1,4 +1,9 @@
 <div id="menu">
+  <% unless @file && @file.filename == 'README.md' %>
+    <span class="title">
+      <%= linkify('file:README.md', 'Home') %>
+    </span> &raquo;
+  <% end %>
   <% if @contents || @file %>
     <span class="title"><%= @breadcrumb_title %></span>
   <% elsif object.is_a?(CodeObjects::Base) %>
