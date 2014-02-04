@@ -258,7 +258,10 @@ function removeDlBoxIfEmpty() {
 
 function makeHeadersSticky() {
   StickyHeaders
-    .set({scrollContainer: '#main'})
+    .set({
+      contentContainer: '#main',
+      switchOnCollisionWith: 'top'
+    })
     .add('h2, h3, h4, h5, h6')
     .activate()
 }

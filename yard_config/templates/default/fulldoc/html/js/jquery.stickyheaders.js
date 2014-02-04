@@ -2,30 +2,41 @@ window.StickyHeaders = (function ($) {
   var me = {};
 
   var config = {
-    scrollContainer: document
+    switchOnCollisionWith: 'top',
+    copy: 'element'
   };
   var selectors = [];
   var headers = [];
   var headerRanges = [];
 
-  var scrollContainer;
+  var body;
+  var contentContainer;
+  var stickyHeaderContainer;
   var currentHeaderRangeIndex = -1;
   var currentScrollOffset = 0;
   var lastScrollOffset = 0;
   var isScrolling = false;
 
   function setHeaders() {
-    scrollContainer = $(config.scrollContainer);
+    contentContainer = $(config.contentContainer || 'body');
+    stickyHeaderContainer = config.stickyHeaderContainer ? $(config.stickyHeaderContainer) : contentContainer;
 
     var elements = [];
     $.each(selectors, function (i, selector) {
-      var foundElements = scrollContainer.find(selector);
+      var foundElements = contentContainer.find(selector);
       $.each(foundElements, function (i, element) {
         var $element = $(element);
         // position() takes scrollTop into account which we don't want
-        var topOffset = $element.offset().top - $element.offsetParent().offset().top;
-        var height = $element.height();
-        var outerHeight = $element.outerHeight(true);
+        var topOffset = (
+          $element.offset().top +
+          (-$element.offsetParent().offset().top) +
+          parseFloat($element.css('margin-top'), 10) +
+          parseFloat($element.css('padding-top'), 10) +
+          (-parseFloat($element.css('font-size'), 10) / 2) +
+          -(i * 0.4)
+        );
+        var height = Math.round($element.height());
+        var outerHeight = Math.round($element.outerHeight(true));
         var bottomOffset = topOffset + outerHeight;
 
         headers.push({
@@ -35,14 +46,17 @@ window.StickyHeaders = (function ($) {
         });
       })
     })
+
+    console.log({headers: headers});
   }
 
   function setHeaderRanges() {
+    var offsetProp = config.switchOnCollisionWith + 'Offset';
     for (var i = 0, len = headers.length; i < len; i++) {
-      var start = headers[i].topOffset;
+      var start = headers[i][offsetProp];
       var end;
       if (headers[i+1]) {
-        end = headers[i+1].topOffset;
+        end = headers[i+1][offsetProp];
       }
       headerRanges.push({
         start: start,
@@ -54,7 +68,7 @@ window.StickyHeaders = (function ($) {
   }
 
   function setCurrentHeaderIndex() {
-    var scrollTop = scrollContainer.scrollTop();
+    var scrollTop = contentContainer.scrollTop();
     for (var i = 0, len = headers.length; i < len; i++) {
       if (scrollTop < headers[i].bottomOffset) {
         break;
@@ -67,16 +81,23 @@ window.StickyHeaders = (function ($) {
     header = $('<div>')
       .attr('id', 'sticky-header')
       .hide()
-      .appendTo(config.scrollContainer);
+      .appendTo(stickyHeaderContainer);
   }
 
   function render() {
     var clonedHeader;
     if (currentHeaderRangeIndex < 0 || currentHeaderRangeIndex > headerRanges.length-1) {
       header.empty().hide();
+      body.removeClass('has-sticky-header');
     } else {
-      clonedHeader = $(headerRanges[currentHeaderRangeIndex].element).clone();
-      header.html(clonedHeader).show();
+      var realHeader = $(headerRanges[currentHeaderRangeIndex].element);
+      if (config.copy === 'content') {
+        header.html(realHeader.html());
+      } else {
+        header.html(realHeader.clone());
+      }
+      header.show();
+      body.addClass('has-sticky-header');
     }
     return me;
   }
@@ -86,9 +107,9 @@ window.StickyHeaders = (function ($) {
   }
 
   function onScroll() {
-    currentScrollOffset = scrollContainer.scrollTop();
+    currentScrollOffset = contentContainer.scrollTop();
 
-    console.log('currentScrollOffset', currentScrollOffset);
+    //console.log('currentScrollOffset', currentScrollOffset);
 
     if (currentScrollOffset > headerRanges[0].start) {
       var newCurrentHeaderRangeIndex = currentHeaderRangeIndex;
@@ -99,7 +120,7 @@ window.StickyHeaders = (function ($) {
       }
 
       if (currentScrollOffset < lastScrollOffset) {
-        console.log('scrolling up');
+        //console.log('scrolling up');
 
         while (true) {
           currentHeaderRange = headerRanges[newCurrentHeaderRangeIndex];
@@ -112,7 +133,7 @@ window.StickyHeaders = (function ($) {
         }
       }
       else {
-        console.log('scrolling down');
+        //console.log('scrolling down');
 
         while (true) {
           currentHeaderRange = headerRanges[newCurrentHeaderRangeIndex];
@@ -130,29 +151,36 @@ window.StickyHeaders = (function ($) {
 
     // only re-render when necessary
     if (newCurrentHeaderRangeIndex !== undefined && currentHeaderRangeIndex !== newCurrentHeaderRangeIndex) {
-      console.log('setting currentHeaderRangeIndex to', newCurrentHeaderRangeIndex);
+      //console.log('setting currentHeaderRangeIndex to', newCurrentHeaderRangeIndex);
       currentHeaderRangeIndex = newCurrentHeaderRangeIndex;
       render();
     } else {
-      console.log('currentHeaderRangeIndex did not change');
+      //console.log('currentHeaderRangeIndex did not change');
     }
 
-    console.log({currentHeaderRangeIndex: currentHeaderRangeIndex});
+    //console.log({currentHeaderRangeIndex: currentHeaderRangeIndex});
 
     lastScrollOffset = currentScrollOffset;
   }
 
-  function listenToScrollEvery(element, callback, interval) {
-    element.on('scroll', function () {
-      isScrolling = true;
-    })
+  function listenToScroll(element, callback, options) {
+    options = options || {};
 
-    setInterval(function () {
-      if (isScrolling) {
-        callback();
-        isScrolling = false;
-      }
-    }, interval);
+    if (options.every) {
+      element.on('scroll', function () {
+        isScrolling = true;
+      })
+
+      setInterval(function () {
+        if (isScrolling) {
+          callback();
+          isScrolling = false;
+        }
+      }, options.every);
+    }
+    else {
+      element.on('scroll', callback);
+    }
   }
 
   me.set = function (/* key, value | config */) {
@@ -170,19 +198,22 @@ window.StickyHeaders = (function ($) {
   }
 
   me.activate = function () {
-    scrollContainer = $(config.scrollContainer);
+    body = $('body');
+    contentContainer = $(config.contentContainer);
     setHeaders();
     setHeaderRanges();
     setCurrentHeaderIndex();
     createStickyHeader();
 
+    /*
     console.log({
       selectors: selectors,
       headers: headers,
       headerRanges: headerRanges
     });
+    */
 
-    listenToScrollEvery(scrollContainer, onScroll, 500);
+    listenToScroll(contentContainer, onScroll);
 
     return me;
   }
