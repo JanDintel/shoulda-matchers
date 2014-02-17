@@ -32,8 +32,9 @@ window.StickyHeaders = (function ($) {
           (-$element.offsetParent().offset().top) +
           parseFloat($element.css('margin-top'), 10) +
           parseFloat($element.css('padding-top'), 10) +
-          (-parseFloat($element.css('font-size'), 10) / 2) +
-          -(i * 0.4)
+          //(-parseFloat($element.css('font-size'), 10) / 2) +
+          -30
+          //-(i * 0.4)
         );
         var height = Math.round($element.height());
         var outerHeight = Math.round($element.outerHeight(true));
@@ -46,17 +47,17 @@ window.StickyHeaders = (function ($) {
         });
       })
     })
-
-    console.log({headers: headers});
   }
 
   function setHeaderRanges() {
     var offsetProp = config.switchOnCollisionWith + 'Offset';
+    var start, end
     for (var i = 0, len = headers.length; i < len; i++) {
-      var start = headers[i][offsetProp];
-      var end;
+      start = headers[i][offsetProp];
       if (headers[i+1]) {
         end = headers[i+1][offsetProp];
+      } else {
+        end = null
       }
       headerRanges.push({
         start: start,
@@ -84,6 +85,20 @@ window.StickyHeaders = (function ($) {
       .appendTo(stickyHeaderContainer);
   }
 
+  /*
+  function getTextContentOf(node) {
+    var content = "";
+
+    for (var i = 0, len = node.childNodes.length; i < len; i++) {
+      if (node.childNodes[i].nodeType === 3) {
+        content += node.childNodes[i].textContent;
+      }
+    }
+
+    return content;
+  }
+  */
+
   function render() {
     var clonedHeader;
     if (currentHeaderRangeIndex < 0 || currentHeaderRangeIndex > headerRanges.length-1) {
@@ -91,8 +106,10 @@ window.StickyHeaders = (function ($) {
       body.removeClass('has-sticky-header');
     } else {
       var realHeader = $(headerRanges[currentHeaderRangeIndex].element);
-      if (config.copy === 'content') {
-        header.html(realHeader.html());
+      if (typeof config.fillHeadersWith === 'function') {
+      }
+      if (config.fillHeadersWith === 'content') {
+        header.html(realHeader.clone().html());
       } else {
         header.html(realHeader.clone());
       }
@@ -103,19 +120,29 @@ window.StickyHeaders = (function ($) {
   }
 
   function isWithinRange(number, range) {
-    return (number >= range.start && number <= range.end);
+    return (
+      number >= range.start &&
+      (
+        range.end === undefined ||
+        range.end === null ||
+        number <= range.end
+      )
+    );
   }
 
   function onScroll() {
     currentScrollOffset = contentContainer.scrollTop();
 
-    //console.log('currentScrollOffset', currentScrollOffset);
+    /*
+    console.log('currentScrollOffset', currentScrollOffset);
+    console.log('headerRanges[0].start', headerRanges[0].start);
+    */
 
     if (currentScrollOffset > headerRanges[0].start) {
       var newCurrentHeaderRangeIndex = currentHeaderRangeIndex;
       var currentHeaderRange = headerRanges[newCurrentHeaderRangeIndex];
 
-      if (newCurrentHeaderRangeIndex === -1) {
+      if (newCurrentHeaderRangeIndex < 0) {
         newCurrentHeaderRangeIndex = 0;
       }
 
@@ -128,11 +155,11 @@ window.StickyHeaders = (function ($) {
             break;
           } else {
             newCurrentHeaderRangeIndex--;
+            //console.log('rewinding newCurrentHeaderRangeIndex to ' + newCurrentHeaderRangeIndex);
             // repeat
           }
         }
-      }
-      else {
+      } else {
         //console.log('scrolling down');
 
         while (true) {
@@ -140,7 +167,15 @@ window.StickyHeaders = (function ($) {
           if (!currentHeaderRange || isWithinRange(currentScrollOffset, currentHeaderRange)) {
             break;
           } else {
+            if (newCurrentHeaderRangeIndex === 16) {
+              console.error('NOPE!!!');
+              //console.log('currentScrollOffset', currentScrollOffset);
+              //console.log('currentHeaderRange', currentHeaderRange);
+              //console.log('Was within range', isWithinRange(currentScrollOffset, currentHeaderRange));
+              break;
+            }
             newCurrentHeaderRangeIndex++;
+            //console.log('bumping newCurrentHeaderRangeIndex to ' + newCurrentHeaderRangeIndex);
             // repeat
           }
         }
@@ -148,6 +183,12 @@ window.StickyHeaders = (function ($) {
     } else {
       newCurrentHeaderRangeIndex = -1;
     }
+
+    /*
+    if (newCurrentHeaderRangeIndex > headerRanges.length-1) {
+      newCurrentHeaderRangeIndex = headerRanges.length-1;
+    }
+    */
 
     // only re-render when necessary
     if (newCurrentHeaderRangeIndex !== undefined && currentHeaderRangeIndex !== newCurrentHeaderRangeIndex) {
@@ -207,8 +248,6 @@ window.StickyHeaders = (function ($) {
 
     /*
     console.log({
-      selectors: selectors,
-      headers: headers,
       headerRanges: headerRanges
     });
     */

@@ -32,7 +32,7 @@ h2 + h3, h2 + .method_details h3 {
   font-size: 1.5em
 }
 
-#main h3 tt {
+#main h3 tt, #sticky-header tt {
   background: transparent;
   border: none;
   font-family: "Source Sans Pro", sans-serif;
@@ -69,9 +69,11 @@ h2 + h3, h2 + .method_details h3 {
   top: 0;
 }
 
+/*
 .has-sticky-header #header .header-row {
-  border-bottom: 1px solid rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(0,0,0,0.3);
 }
+*/
 
 #menu, #search {
   height: 6rem;
@@ -261,25 +263,15 @@ h2 + h3, h2 + .method_details h3 {
 #sticky-header {
   position: fixed;
   z-index: 999;
-  top: 6rem;
-  left: ;
-  /*height: 3em;*/
+  top: 6.1rem;
   width: 100%;
   padding-left: 2em;   /* same as content padding */
   padding-right: 2em;   /* same as content padding */
   padding-top: 1em;
   padding-bottom: 1em;
   background-color: rgba(255,255,255,0.8);
-  border-bottom: 1px solid rgba(0,0,0,0.2);
-}
-
-#sticky-header h2,
-#sticky-header h3,
-#sticky-header h4,
-#sticky-header h5,
-#sticky-header h6 {
-  margin: 0;
-  padding: 0;
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+  text-align: right;
 }
 
 .clear {

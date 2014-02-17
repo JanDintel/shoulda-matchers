@@ -260,7 +260,11 @@ function makeHeadersSticky() {
   StickyHeaders
     .set({
       contentContainer: '#main',
-      switchOnCollisionWith: 'top'
+      stickyHeaderContainer: '#header',
+      switchOnCollisionWith: 'top',
+      fillHeadersWith: function (node) {
+        return node.clone().html().find('small').remove();
+      }
     })
     .add('h2, h3, h4, h5, h6')
     .activate()
